@@ -63,6 +63,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '32952166104',
     projectId: 'broker-app-2026',
     storageBucket: 'broker-app-2026.firebasestorage.app',
-    iosBundleId: 'com.broker.broker',
+    iosBundleId: 'com.hossamomar.bricksiteproo',
   );
 }
