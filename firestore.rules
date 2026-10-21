@@ -1,0 +1,56 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /developers/{developerId} {
+      allow read, write: if true;
+    }
+
+    match /offers/{offerId} {
+      allow read, write: if true;
+    }
+
+    match /compounds/{compoundId} {
+      allow read, write: if true;
+    }
+
+    // App-wide settings managed by the admin panel (e.g. filter_options).
+    match /config/{configId} {
+      allow read, write: if true;
+    }
+
+    match /registrations/{registrationId} {
+      allow read, write: if true;
+    }
+
+    // Broker commissions — broker reads.
+    match /commissions/{commissionId} {
+      allow read, write: if true;
+    }
+
+    // Withdrawal requests — broker creates + reads.
+    match /withdrawal_requests/{requestId} {
+      allow read, write: if true;
+    }
+
+    // Broker-scoped client records.
+    match /clients/{clientId} {
+      allow read, write: if true;
+    }
+
+    // Viewing / inspection requests — broker creates, admin reads/writes.
+    match /viewing_requests/{requestId} {
+      allow read, write: if true;
+    }
+
+    // Onboarding screens (public read, admin write).
+    match /onboarding/{itemId} {
+      allow read, write: if true;
+    }
+
+    // App notifications (broker reads own + broadcast, admin writes).
+    match /notifications/{notificationId} {
+      allow read, write: if true;
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "firestore": {
+    "database": "(default)",
+    "location": "eur3",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "auth": {
+    "providers": {
+      "emailPassword": true
+    }
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "broker-app-2026",
+          "appId": "1:32952166104:android:1dada657647bfc895c59ad",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "broker-app-2026",
+          "configurations": {
+            "android": "1:32952166104:android:1dada657647bfc895c59ad",
+            "ios": "1:32952166104:ios:482a2501bb9c44595c59ad"
+          }
+        }
+      }
+    }
+  }
+}
