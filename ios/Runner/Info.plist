@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Broker</string>
+	<string>بروكر</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -45,5 +45,24 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<!-- أذونات الكاميرا والصور -->
+	<key>NSCameraUsageDescription</key>
+	<string>يحتاج التطبيق إلى استخدام الكاميرا لالتقاط صورة الملف الشخصي أو صور العقارات.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>يحتاج التطبيق إلى الوصول لمكتبة الصور لاختيار صورة الملف الشخصي أو صور العقارات والمشاريع.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>يحتاج التطبيق إلى إذن لحفظ صور العقارات في مكتبة الصور الخاصة بك.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>يحتاج التطبيق إلى استخدام الميكروفون عند تسجيل أو التقاط مقاطع الفيديو الخاصة بالعقارات.</string>
+
+	<!-- مخططات التطبيقات الخارجية للاتصال والواتساب وروابط الويب -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>tel</string>
+		<string>whatsapp</string>
+		<string>https</string>
+		<string>http</string>
+	</array>
 </dict>
 </plist>
