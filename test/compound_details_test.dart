@@ -98,5 +98,30 @@ void main() {
       expect(compound.effectiveAttachments.isNotEmpty, isTrue);
       expect(compound.effectiveAttachments.first['title'], contains('PDF'));
     });
+
+    test('dynamic amenities override defaults and allow adding custom or removing amenities', () {
+      // Compound with custom amenities (e.g., added metro station, removed schools/hospitals)
+      const compound = Compound(
+        id: 'c-custom-amenities',
+        name: 'مشروع مميز',
+        location: 'بني سويف',
+        developerName: 'مطور تجريبي',
+        developerStartPrice: 6000000,
+        commission: 150000,
+        propertyTypes: ['شقة'],
+        amenities: {
+          'جيم متكامل': 'داخل المشروع',
+          'محطة قطار سريعة': '2 كم',
+          'هايبر ماركت': '500 م',
+        },
+      );
+
+      final amenities = compound.effectiveAmenities;
+      expect(amenities.length, equals(3));
+      expect(amenities['جيم متكامل'], equals('داخل المشروع'));
+      expect(amenities['محطة قطار سريعة'], equals('2 كم'));
+      expect(amenities['هايبر ماركت'], equals('500 م'));
+      expect(amenities.containsKey('مدرسة'), isFalse);
+    });
   });
 }

@@ -662,6 +662,7 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
         'regions': regionsData,
         'readinessStatuses': options.readinessStatuses,
         'finishings': options.finishings,
+        'amenities': options.amenities,
       });
     } on FirebaseException catch (e) {
       throw ServerException(e.message ?? 'فشل حفظ خيارات التصفية');

@@ -9,6 +9,7 @@ class FilterOptionsModel extends FilterOptions {
     super.regions,
     super.readinessStatuses,
     super.finishings,
+    super.amenities,
   });
 
   factory FilterOptionsModel.fromFirestore(
@@ -42,11 +43,17 @@ class FilterOptionsModel extends FilterOptions {
       }
     }
 
+    final loadedAmenities = strings('amenities');
+    final amenities = loadedAmenities.isNotEmpty
+        ? loadedAmenities
+        : FilterOptions.defaultAmenities;
+
     return FilterOptionsModel(
       propertyTypes: strings('propertyTypes'),
       regions: regions,
       readinessStatuses: strings('readinessStatuses'),
       finishings: strings('finishings'),
+      amenities: amenities,
     );
   }
 }

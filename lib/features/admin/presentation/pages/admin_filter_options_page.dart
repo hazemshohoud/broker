@@ -218,6 +218,40 @@ class _AdminFilterOptionsPageState extends State<AdminFilterOptionsPage> {
                 ],
               ),
 
+              const SizedBox(height: 20),
+
+              // Amenities Section (المرافق والخدمات المجاورة - المرفقات)
+              _SectionContainer(
+                title: 'المرافق والخدمات المجاورة (المرفقات)',
+                subtitle: 'خيارات مثل: جيم، مستشفى، جامعة، مدرسة، نادي... (يتم الحفظ تلقائياً)',
+                action: TextButton.icon(
+                  onPressed: () => _addAmenityDialog(context, cubit, currentOptions),
+                  icon: const Icon(IconsaxPlusLinear.add_circle, size: 16),
+                  label: const Text('إضافة مرفق'),
+                ),
+                children: [
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: currentOptions.amenities.map((amenity) {
+                      return Chip(
+                        label: Text(amenity),
+                        backgroundColor: AppColors.background,
+                        deleteIcon: const Icon(Icons.close, size: 14),
+                        onDeleted: () {
+                          final updated = currentOptions.amenities.where((a) => a != amenity).toList();
+                          _saveDirect(cubit, currentOptions.copyWith(amenities: updated));
+                        },
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          side: const BorderSide(color: AppColors.borderLight),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+
               const SizedBox(height: 32),
 
               FilledButton(
@@ -334,6 +368,39 @@ class _AdminFilterOptionsPageState extends State<AdminFilterOptionsPage> {
               if (val.isNotEmpty && !options.propertyTypes.contains(val)) {
                 final updated = List<String>.from(options.propertyTypes)..add(val);
                 _saveDirect(cubit, options.copyWith(propertyTypes: updated));
+                Navigator.of(dialogCtx).pop();
+              }
+            },
+            child: const Text('إضافة وحفظ'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _addAmenityDialog(
+    BuildContext context,
+    AdminCubit cubit,
+    FilterOptions options,
+  ) {
+    final ctrl = TextEditingController();
+    showDialog<void>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('إضافة مرفق جديد'),
+        content: TextField(
+          controller: ctrl,
+          decoration: const InputDecoration(hintText: 'مثال: جيم أو مستشفى أو مدرسة'),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogCtx).pop(), child: const Text('إلغاء')),
+          FilledButton(
+            onPressed: () {
+              final val = ctrl.text.trim();
+              if (val.isNotEmpty && !options.amenities.contains(val)) {
+                final updated = List<String>.from(options.amenities)..add(val);
+                _saveDirect(cubit, options.copyWith(amenities: updated));
                 Navigator.of(dialogCtx).pop();
               }
             },

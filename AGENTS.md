@@ -29,7 +29,7 @@ Flutter real-estate broker app, Clean Architecture + Firebase (project `broker-a
 - `developers` {name, logoUrl, order}
 - `offers` {title, imageUrl, order}
 - `compounds` {name, location, developerName, developerLogoUrl, imageUrl, developerStartPrice, resaleStartPrice (nullable → "غير متوفر"), commission (EGP amount), phone, propertyTypes[], region, district, readiness, finishing}
-- `config/filter_options` {propertyTypes[], regions[{name, districts[]}], readinessStatuses[], finishings[]} — drives the compounds filter sheet; compound filter values must match these strings exactly. Edited by the (planned in-app) admin panel; public read, client write denied.
+- `config/filter_options` {propertyTypes[], regions[{name, districts[]}], readinessStatuses[], finishings[], amenities[]} — drives the compounds filter sheet & compound amenities choices; compound filter values must match these strings exactly. Managed in the in-app admin panel; public read, client write denied.
 - `commissions` {brokerId, amount, compoundName?, status ("approved"/"pending"/"completed"/"rejected"), createdAt} — read own only, write denied.
 - `withdrawal_requests` {brokerId, amount, method ("instapay"/"wallet"), status ("pending" initially), createdAt} — broker creates + reads own.
 - `clients` {brokerId, name, phone, interest, note?, createdAt} — broker-scoped (read/create/delete own only; update denied). Sorted client-side by createdAt (no composite index).

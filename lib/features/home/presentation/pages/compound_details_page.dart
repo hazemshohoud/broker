@@ -136,9 +136,11 @@ class _CompoundDetailsPageState extends State<CompoundDetailsPage> {
                   _PropertyMapCard(compound: compound),
                   const SizedBox(height: 14),
 
-                  // 7. الخدمات القريبة والمسافات (10 خدمات مع المسافات)
-                  _AmenitiesCard(amenities: compound.effectiveAmenities),
-                  const SizedBox(height: 14),
+                  // 7. الخدمات القريبة والمسافات (المرفقات)
+                  if (compound.effectiveAmenities.isNotEmpty) ...[
+                    _AmenitiesCard(amenities: compound.effectiveAmenities),
+                    const SizedBox(height: 14),
+                  ],
 
                   // 8. الأسئلة الشائعة (Accordion V)
                   _FaqAccordionCard(faqs: compound.effectiveFaqs),
@@ -1121,9 +1123,14 @@ class _AmenitiesCard extends StatelessWidget {
 
   final Map<String, String> amenities;
 
-
   @override
   Widget build(BuildContext context) {
+    final validAmenities = amenities.entries
+        .where((e) => e.key.trim().isNotEmpty)
+        .toList();
+
+    if (validAmenities.isEmpty) return const SizedBox.shrink();
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1155,51 +1162,56 @@ class _AmenitiesCard extends StatelessWidget {
           const SizedBox(height: 14),
 
           // Grid of Amenities
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: amenities.entries.map((entry) {
-              return Container(
-                width: (MediaQuery.of(context).size.width - 74) / 2,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.borderLight),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        entry.key,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final itemWidth = (constraints.maxWidth - 8) / 2;
+              return Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: validAmenities.map((entry) {
+                  return Container(
+                    width: itemWidth > 120 ? itemWidth : constraints.maxWidth,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.borderLight),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: AppColors.brand.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        entry.value,
-                        style: const TextStyle(
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.brandDark,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            entry.key,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
                         ),
-                      ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppColors.brand.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            entry.value.isNotEmpty ? entry.value : '1 كم',
+                            style: const TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.brandDark,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                }).toList(),
               );
-            }).toList(),
+            },
           ),
         ],
       ),

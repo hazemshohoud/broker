@@ -25,6 +25,20 @@ class AdminCompoundEditPage extends StatefulWidget {
   State<AdminCompoundEditPage> createState() => _AdminCompoundEditPageState();
 }
 
+class _AmenityEntry {
+  _AmenityEntry({required String name, required String distance})
+      : nameController = TextEditingController(text: name),
+        distanceController = TextEditingController(text: distance);
+
+  final TextEditingController nameController;
+  final TextEditingController distanceController;
+
+  void dispose() {
+    nameController.dispose();
+    distanceController.dispose();
+  }
+}
+
 class _AdminCompoundEditPageState extends State<AdminCompoundEditPage> {
   final _formKey = GlobalKey<FormState>();
 
@@ -39,7 +53,7 @@ class _AdminCompoundEditPageState extends State<AdminCompoundEditPage> {
   late final TextEditingController _deliveryDateController;
   late final TextEditingController _mapUrlController;
 
-  late final Map<String, TextEditingController> _amenityControllers;
+  final List<_AmenityEntry> _amenities = [];
   late final TextEditingController _faqWhyController;
   late final TextEditingController _faqDevController;
   late final TextEditingController _faqInvestController;
@@ -96,10 +110,9 @@ class _AdminCompoundEditPageState extends State<AdminCompoundEditPage> {
       'كافيه او مطعم': '1 كم',
       'مساحات خضراء': '1 كم',
     };
-    _amenityControllers = {
-      for (final entry in initialAmenities.entries)
-        entry.key: TextEditingController(text: entry.value),
-    };
+    for (final entry in initialAmenities.entries) {
+      _amenities.add(_AmenityEntry(name: entry.key, distance: entry.value));
+    }
 
     final initialFaqs = c?.effectiveFaqs ?? const {};
     _faqWhyController = TextEditingController(
@@ -147,8 +160,8 @@ class _AdminCompoundEditPageState extends State<AdminCompoundEditPage> {
     _areaController.dispose();
     _deliveryDateController.dispose();
     _mapUrlController.dispose();
-    for (final controller in _amenityControllers.values) {
-      controller.dispose();
+    for (final item in _amenities) {
+      item.dispose();
     }
     _faqWhyController.dispose();
     _faqDevController.dispose();
@@ -532,6 +545,143 @@ class _AdminCompoundEditPageState extends State<AdminCompoundEditPage> {
     );
   }
 
+  void _addAmenity([String name = '', String distance = '1 كم']) {
+    setState(() {
+      _amenities.add(_AmenityEntry(name: name, distance: distance));
+    });
+  }
+
+  void _removeAmenity(int index) {
+    setState(() {
+      final removed = _amenities.removeAt(index);
+      removed.dispose();
+    });
+  }
+
+  void _showAddAmenityDialog(BuildContext context, FilterOptions filterOptions) {
+    final existingNames = _amenities.map((a) => a.nameController.text.trim()).toSet();
+    final availableSuggestions = filterOptions.amenities
+        .where((a) => !existingNames.contains(a))
+        .toList();
+
+    final nameController = TextEditingController();
+    final distanceController = TextEditingController(text: '1 كم');
+
+    showDialog<void>(
+      context: context,
+      builder: (dialogCtx) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: AppColors.surface,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+              title: const Row(
+                children: [
+                  Icon(IconsaxPlusBold.routing, color: AppColors.brandDark, size: 20),
+                  SizedBox(width: 8),
+                  Text(
+                    'إضافة مرفق / خدمة',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (availableSuggestions.isNotEmpty) ...[
+                      const Text(
+                        'اختر من المرفقات الشائعة:',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: availableSuggestions.map((suggestion) {
+                          final isSelected = nameController.text.trim() == suggestion;
+                          return ChoiceChip(
+                            label: Text(suggestion),
+                            selected: isSelected,
+                            selectedColor: AppColors.brand,
+                            backgroundColor: AppColors.background,
+                            labelStyle: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                              color: isSelected ? AppColors.primaryDark : AppColors.textPrimary,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: BorderSide(
+                                color: isSelected ? AppColors.brand : AppColors.borderLight,
+                              ),
+                            ),
+                            onSelected: (_) {
+                              setDialogState(() {
+                                nameController.text = suggestion;
+                              });
+                            },
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 14),
+                      const Divider(color: AppColors.borderLight),
+                      const SizedBox(height: 10),
+                    ],
+                    AppFormField(
+                      label: 'اسم المرفق',
+                      hint: 'مثال: جيم، مستشفى، محطة مترو...',
+                      controller: nameController,
+                      prefixIcon: IconsaxPlusLinear.routing,
+                    ),
+                    const SizedBox(height: 12),
+                    AppFormField(
+                      label: 'المسافة التقديرية',
+                      hint: 'مثال: 500 م، 1 كم، داخل المشروع...',
+                      controller: distanceController,
+                      prefixIcon: IconsaxPlusLinear.location,
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogCtx).pop(),
+                  child: const Text('إلغاء'),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    final name = nameController.text.trim();
+                    final dist = distanceController.text.trim();
+                    if (name.isNotEmpty) {
+                      _addAmenity(name, dist.isNotEmpty ? dist : '1 كم');
+                      Navigator.of(dialogCtx).pop();
+                    }
+                  },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.brand,
+                    foregroundColor: AppColors.primaryDark,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: const Text('إضافة'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   Future<void> _save() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_selectedDeveloper == null) {
@@ -553,9 +703,14 @@ class _AdminCompoundEditPageState extends State<AdminCompoundEditPage> {
     final matchedDev = devState.developers.where((d) => d.name == _selectedDeveloper).firstOrNull;
     final developerLogoUrl = matchedDev?.logoUrl ?? widget.compound?.developerLogoUrl;
 
-    final savedAmenities = _amenityControllers.map(
-      (key, controller) => MapEntry(key, controller.text.trim()),
-    );
+    final Map<String, String> savedAmenities = {};
+    for (final item in _amenities) {
+      final name = item.nameController.text.trim();
+      final dist = item.distanceController.text.trim();
+      if (name.isNotEmpty) {
+        savedAmenities[name] = dist.isNotEmpty ? dist : '1 كم';
+      }
+    }
     final savedFaqs = {
       'لماذا هذا العقار؟': _faqWhyController.text.trim(),
       'معلومات عن المطور': _faqDevController.text.trim(),
@@ -1614,40 +1769,215 @@ class _AdminCompoundEditPageState extends State<AdminCompoundEditPage> {
                 ),
                 const SizedBox(height: 24),
 
-                // Nearby Amenities
-                const Text(
-                  'الخدمات القريبة والمسافات (كيلومتر)',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
-                  ),
+                // Nearby Amenities (المرفقات والخدمات القريبة)
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Text(
+                                'الخدمات القريبة والمرفقات',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.brand.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  '${_amenities.length}',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.brandDark,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          const Text(
+                            'المسافات التقديرية (1 كم، 500 م)، يمكنك إضافة أو حذف أي مرفق',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    TextButton.icon(
+                      onPressed: () => _showAddAmenityDialog(context, filterOptions),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.brandDark,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      ),
+                      icon: const Icon(IconsaxPlusLinear.add_circle, size: 16),
+                      label: const Text('إضافة مرفق', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 6),
-                const Text(
-                  'أدخل المسافة التقديرية لكل خدمة مجاورة (مثال: 1 كم، 500 م)',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                GridView.count(
-                  crossAxisCount: 2,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 8,
-                  childAspectRatio: 2.2,
-                  children: _amenityControllers.entries.map((entry) {
-                    return AppFormField(
-                      label: entry.key,
-                      controller: entry.value,
-                      hint: '1 كم',
-                      prefixIcon: IconsaxPlusLinear.routing,
+                const SizedBox(height: 10),
+
+                // Quick add chips for suggestions
+                Builder(
+                  builder: (_) {
+                    final existingNames = _amenities.map((a) => a.nameController.text.trim()).toSet();
+                    final remainingSuggestions = filterOptions.amenities
+                        .where((a) => !existingNames.contains(a))
+                        .take(6)
+                        .toList();
+
+                    if (remainingSuggestions.isEmpty) return const SizedBox.shrink();
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: remainingSuggestions.map((s) {
+                          return ActionChip(
+                            avatar: const Icon(IconsaxPlusLinear.add, size: 13, color: AppColors.brandDark),
+                            label: Text(s),
+                            labelStyle: const TextStyle(fontSize: 11, color: AppColors.textPrimary),
+                            backgroundColor: AppColors.surface,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: const BorderSide(color: AppColors.borderLight),
+                            ),
+                            onPressed: () => _addAmenity(s, '1 كم'),
+                          );
+                        }).toList(),
+                      ),
                     );
-                  }).toList(),
+                  },
                 ),
+
+                if (_amenities.isEmpty)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.borderLight),
+                    ),
+                    child: Column(
+                      children: [
+                        const Icon(IconsaxPlusLinear.routing, size: 32, color: AppColors.textSecondary),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'لم يتم إضافة أي مرافق لهذا المشروع بعد',
+                          style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+                        ),
+                        const SizedBox(height: 6),
+                        TextButton(
+                          onPressed: () => _showAddAmenityDialog(context, filterOptions),
+                          child: const Text('اضغط هنا لإضافة خدمات ومرافق'),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _amenities.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (context, index) {
+                      final item = _amenities[index];
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: AppColors.brand.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(
+                                IconsaxPlusLinear.routing,
+                                size: 16,
+                                color: AppColors.brandDark,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            // اسم المرفق
+                            Expanded(
+                              flex: 3,
+                              child: TextFormField(
+                                controller: item.nameController,
+                                decoration: const InputDecoration(
+                                  isDense: true,
+                                  hintText: 'اسم المرفق (جيم، مستشفى...)',
+                                  hintStyle: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(vertical: 8),
+                                ),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              height: 22,
+                              width: 1,
+                              color: AppColors.borderLight,
+                              margin: const EdgeInsets.symmetric(horizontal: 8),
+                            ),
+                            // المسافة
+                            Expanded(
+                              flex: 2,
+                              child: TextFormField(
+                                controller: item.distanceController,
+                                decoration: const InputDecoration(
+                                  isDense: true,
+                                  hintText: 'المسافة (1 كم)',
+                                  hintStyle: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(vertical: 8),
+                                ),
+                                style: const TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            // زر حذف المرفق
+                            IconButton(
+                              icon: const Icon(
+                                IconsaxPlusLinear.trash,
+                                size: 17,
+                                color: AppColors.favorite,
+                              ),
+                              tooltip: 'حذف المرفق',
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                              onPressed: () => _removeAmenity(index),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 const SizedBox(height: 24),
 
                 // FAQs Section

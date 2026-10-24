@@ -107,7 +107,7 @@ class Compound extends Equatable {
   final Map<String, String>? amenities;
 
   Map<String, String> get effectiveAmenities {
-    if (amenities != null && amenities!.isNotEmpty) return amenities!;
+    if (amenities != null) return amenities!;
     return const {
       'مستشفى': '1 كم',
       'جامعة': '1 كم',
