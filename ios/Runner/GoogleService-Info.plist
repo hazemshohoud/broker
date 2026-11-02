@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.broker.mansour</string>
+	<string>com.broker.app</string>
 	<key>PROJECT_ID</key>
 	<string>broker-app-2026</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:32952166104:ios:482a2501bb9c44595c59ad</string>
+	<string>1:32952166104:ios:a1780082a3a762d35c59ad</string>
 </dict>
 </plist>

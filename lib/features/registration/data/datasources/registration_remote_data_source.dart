@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/services/cloudinary_service.dart';
 import '../../../../core/utils/auth_credentials.dart';
-import '../../../auth/data/datasources/auth_remote_data_source.dart';
 import '../../domain/entities/registration_request.dart';
 import '../models/registration_model.dart';
 
@@ -35,13 +34,12 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
         email: AuthCredentials.emailForPhone(request.phone),
         password: AuthCredentials.passwordForPin(request.pin),
       );
-      final isAdmin = AuthRemoteDataSourceImpl.adminPhones.contains(request.phone.trim());
       try {
         final photoUrl = await _uploadPhoto(request.photoPath);
         await _firestore
             .collection('registrations')
             .doc(credential.user!.uid)
-            .set(request.toMap(photoUrl: photoUrl, isAdmin: isAdmin));
+            .set(request.toMap(photoUrl: photoUrl));
       } finally {
         await _auth.signOut();
       }
